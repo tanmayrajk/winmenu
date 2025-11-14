@@ -49,7 +49,7 @@ function render() {
     if (isCursorVisible) {
         ctx.font = "30px Cascadia Mono";
         ctx.fillStyle = "yellow";
-        ctx.fillRect(9 + ctx.measureText(cursorStr).width, 8, 2, 34)
+        ctx.fillRect(9 + ctx.measureText(cursorStr).width - offset, 8, 2, 34)
     }
 
     const buffer = Buffer.from(ctx.getImageData(0, 0, width, height).data);
