@@ -4,6 +4,9 @@ import { createCanvas, Path2D } from '@napi-rs/canvas';
 const inputVal = "chromechromechromechromechromechromechromechromechromechromechromechromechromechromechromechromechromechrome"
 let cursorPos = 0
 let cursorStr = ""
+let lastResetTime = Date.now();
+const cusorResetDuration = 350;
+let isCursorVisible = true;
 
 const window = sdl.video.createWindow({ title: "Hello, SDL!", borderless: true, height: 50 });
 const { pixelWidth: width, pixelHeight: height } = window;
@@ -28,10 +31,11 @@ function render() {
 
     ctx.restore();
 
-    ctx.font = "30px Cascadia Mono";
-
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(9 + ctx.measureText(cursorStr).width, 8, 2, 34)
+    if (isCursorVisible) {
+        ctx.font = "30px Cascadia Mono";
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(9 + ctx.measureText(cursorStr).width, 8, 2, 34)
+    }
 
     const buffer = Buffer.from(ctx.getImageData(0, 0, width, height).data);
     window.render(width, height, width * 4, 'rgba32', buffer);
@@ -46,6 +50,21 @@ window.on("keyDown", e => {
         cursorPos -= 1;
     }
 
+    if (e.key === "escape") {
+        window.destroyGently();
+    }
+
     cursorStr = inputVal.slice(0, cursorPos);
+    isCursorVisible = true;
+    lastResetTime = Date.now();
+
     render();
 })
+
+setInterval(() => {
+    if (Date.now() >= cusorResetDuration + lastResetTime) {
+        isCursorVisible = !isCursorVisible;
+        render();
+    }
+}, cusorResetDuration)
+
