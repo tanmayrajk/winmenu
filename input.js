@@ -1,7 +1,7 @@
 import sdl from '@kmamal/sdl';
 import { createCanvas, Path2D } from '@napi-rs/canvas';
 
-let inputVal = "chr"
+let inputVal = ""
 let cursorPos = 0
 let cursorStr = ""
 let lastResetTime = Date.now();
@@ -17,6 +17,8 @@ const ctx = canvas.getContext("2d");
 
 ctx.font = "30px Cascadia Mono";
 charLength = ctx.measureText("a").width;
+
+console.log(cursorPos)
 
 function render() {
     ctx.fillStyle = "blue";
@@ -55,6 +57,29 @@ function render() {
 
 render();
 
+window.on("textInput", e => {
+    if (e.text === " ") {
+        inputVal = inputVal.slice(0, cursorPos) + e.text + inputVal.slice(cursorPos);
+        cursorPos += 1
+    }
+
+    if (/^[a-zA-Z0-9]$/.test(e.text)) {
+        inputVal = inputVal.slice(0, cursorPos) + e.text + inputVal.slice(cursorPos);
+        cursorPos += 1
+    }
+
+    if (/^[\p{P}\p{S}]$/u.test(e.text)) {
+        inputVal = inputVal.slice(0, cursorPos) + e.text + inputVal.slice(cursorPos);
+        cursorPos += 1
+    }
+
+    cursorStr = inputVal.slice(0, cursorPos);
+    isCursorVisible = true;
+    lastResetTime = Date.now();
+
+    render();
+})
+
 window.on("keyDown", e => {
     if (e.key === "right" && cursorPos < inputVal.length) {
         cursorPos += 1;
@@ -73,23 +98,6 @@ window.on("keyDown", e => {
 
     if (e.key === "delete" && cursorPos != inputVal.length) {
         inputVal = inputVal.slice(0, cursorPos) + inputVal.slice(cursorPos + 1)
-    }
-
-    if (e.key === "space") {
-        inputVal = inputVal.slice(0, cursorPos) + " " + inputVal.slice(cursorPos);
-        cursorPos += 1
-    }
-
-    if (/^[a-z]$/.test(e.key)) {
-        if (e.ctrl && e.key === "a") {
-            console.log("select ALL")
-        } else if (e.shift || e.capslock) {
-            inputVal = inputVal.slice(0, cursorPos) + e.key.toUpperCase() + inputVal.slice(cursorPos);
-            cursorPos += 1
-        } else {
-            inputVal = inputVal.slice(0, cursorPos) + e.key + inputVal.slice(cursorPos);
-            cursorPos += 1
-        }
     }
 
     cursorStr = inputVal.slice(0, cursorPos);
