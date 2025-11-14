@@ -1,7 +1,7 @@
 import sdl from '@kmamal/sdl';
 import { createCanvas, Path2D } from '@napi-rs/canvas';
 
-const inputVal = "chrome1234ABCD!@chrome1234ABCD!@chrome1234ABCD!@chrome1234ABCD!@chrome1234ABCD!@chrome1234ABCD!@"
+let inputVal = "chr"
 let cursorPos = 0
 let cursorStr = ""
 let lastResetTime = Date.now();
@@ -17,31 +17,28 @@ const ctx = canvas.getContext("2d");
 
 ctx.font = "30px Cascadia Mono";
 charLength = ctx.measureText("a").width;
-console.log(width - 10)
 
 function render() {
     ctx.fillStyle = "blue";
     ctx.fillRect(0, 0, width, height);
 
+    ctx.fillStyle = "darkblue";
+    ctx.fillRect(5, 5, width - 10, height - 10);
+
     ctx.save();
 
     let inputBox = new Path2D();
-    inputBox.rect(5, 5, width - 10, 40);
+    inputBox.rect(10, 5, width - 20, 40);
     ctx.clip(inputBox);
 
-    ctx.fillStyle = "darkblue";
-    ctx.fillRect(0, 0, width, height);
     ctx.fillStyle = "lightblue";
     ctx.font = "30px Cascadia Mono";
     const coveredTextWidth = charLength * cursorPos;
     let offset = 0;
-    const inputWidth = width - 15;
+    const inputWidth = width - 20;
     if (coveredTextWidth > inputWidth) {
         offset = coveredTextWidth - inputWidth;
     }
-    console.log({
-        coveredTextWidth, cursorPos, offset, textOffset: 10 - Math.abs(offset)
-    })
     ctx.fillText(inputVal, 10 - Math.abs(offset), 35);
 
     ctx.restore();
@@ -67,6 +64,32 @@ window.on("keyDown", e => {
 
     if (e.key === "escape") {
         window.destroyGently();
+    }
+
+    if (e.key == "backspace" && cursorPos != 0) {
+        inputVal = inputVal.slice(0, cursorPos - 1) + inputVal.slice(cursorPos)
+        cursorPos -= 1;
+    }
+
+    if (e.key === "delete" && cursorPos != inputVal.length) {
+        inputVal = inputVal.slice(0, cursorPos) + inputVal.slice(cursorPos + 1)
+    }
+
+    if (e.key === "space") {
+        inputVal = inputVal.slice(0, cursorPos) + " " + inputVal.slice(cursorPos);
+        cursorPos += 1
+    }
+
+    if (/^[a-z]$/.test(e.key)) {
+        if (e.ctrl && e.key === "a") {
+            console.log("select ALL")
+        } else if (e.shift || e.capslock) {
+            inputVal = inputVal.slice(0, cursorPos) + e.key.toUpperCase() + inputVal.slice(cursorPos);
+            cursorPos += 1
+        } else {
+            inputVal = inputVal.slice(0, cursorPos) + e.key + inputVal.slice(cursorPos);
+            cursorPos += 1
+        }
     }
 
     cursorStr = inputVal.slice(0, cursorPos);
