@@ -1,17 +1,23 @@
 import sdl from '@kmamal/sdl';
 import { createCanvas, Path2D } from '@napi-rs/canvas';
 
-const inputVal = "chromechromechromechromechromechromechromechromechromechromechromechromechromechromechromechromechromechrome"
+const inputVal = "chrome1234ABCD!@chrome1234ABCD!@chrome1234ABCD!@chrome1234ABCD!@chrome1234ABCD!@chrome1234ABCD!@"
 let cursorPos = 0
 let cursorStr = ""
 let lastResetTime = Date.now();
 const cusorResetDuration = 350;
 let isCursorVisible = true;
 
-const window = sdl.video.createWindow({ title: "Hello, SDL!", borderless: true, height: 50 });
+let charLength = 0;
+
+const window = sdl.video.createWindow({ title: "input box", borderless: true, height: 50 });
 const { pixelWidth: width, pixelHeight: height } = window;
 const canvas = createCanvas(width, height);
 const ctx = canvas.getContext("2d");
+
+ctx.font = "30px Cascadia Mono";
+charLength = ctx.measureText("a").width;
+console.log(width - 10)
 
 function render() {
     ctx.fillStyle = "blue";
@@ -27,7 +33,16 @@ function render() {
     ctx.fillRect(0, 0, width, height);
     ctx.fillStyle = "lightblue";
     ctx.font = "30px Cascadia Mono";
-    ctx.fillText(inputVal, 10, 35);
+    const coveredTextWidth = charLength * cursorPos;
+    let offset = 0;
+    const inputWidth = width - 15;
+    if (coveredTextWidth > inputWidth) {
+        offset = coveredTextWidth - inputWidth;
+    }
+    console.log({
+        coveredTextWidth, cursorPos, offset, textOffset: 10 - Math.abs(offset)
+    })
+    ctx.fillText(inputVal, 10 - Math.abs(offset), 35);
 
     ctx.restore();
 
