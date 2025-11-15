@@ -61,7 +61,6 @@ function render() {
     }
 
     ctx.fillStyle = "#444444"
-    // const selectionText = inputVal.slice(selection.start, selection.end + 1);
     const selectionWidth = charLength * (selection.end - selection.start);
     const selectionLeftWidth = charLength * selection.start;
     ctx.fillRect(paddingX + selectionLeftWidth + offset, paddingY, selectionWidth, height - paddingY * 2)
@@ -111,10 +110,13 @@ window.on("keyDown", e => {
                     selection.start += 1
                 }
             }
+            if (cursorPos < inputVal.length) cursorPos += 1
         } else {
+            if (cursorPos < inputVal.length && selection.start === selection.end) {
+                cursorPos += 1;
+            }
             selection = { start: 0, end: 0 }
         }
-        if (cursorPos < inputVal.length) cursorPos += 1;
     } else if (e.key === "left") {
         if (e.shift) {
             if (cursorPos - 1 >= 0) {
@@ -127,11 +129,12 @@ window.on("keyDown", e => {
                     selection.end -= 1;
                 }
             }
+            if (cursorPos >= 1) cursorPos -= 1;
         } else {
+            if (cursorPos >= 1 && selection.start === selection.end) cursorPos -= 1;
             selection = { start: 0, end: 0 }
         }
 
-        if (cursorPos >= 1) cursorPos -= 1;
 
     }
 
@@ -168,6 +171,27 @@ window.on("keyDown", e => {
         selection.start = 0
         selection.end = inputVal.length;
         cursorPos = inputVal.length;
+    }
+
+    if (e.key === "x" && e.ctrl) {
+        const selectionText = inputVal.slice(selection.start, selection.end);
+        sdl.clipboard.setText(selectionText)
+        inputVal = inputVal.slice(0, selection.start) + inputVal.slice(selection.end)
+        cursorPos = selection.start
+        selection = { start: 0, end: 0 }
+    }
+
+    if (e.key === "c" && e.ctrl) {
+        const selectionText = inputVal.slice(selection.start, selection.end + 1);
+        sdl.clipboard.setText(selectionText)
+    }
+
+    if (e.key === "v" && e.ctrl) {
+        inputVal = inputVal.slice(0, selection.start) + inputVal.slice(selection.end)
+        const cbText = sdl.clipboard.text
+        inputVal = inputVal.slice(0, cursorPos) + cbText + inputVal.slice(cursorPos)
+        cursorPos += cbText.length
+        selection = { start: 0, end: 0 }
     }
 
     cursorStr = inputVal.slice(0, cursorPos);
